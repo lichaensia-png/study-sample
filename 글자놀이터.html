@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한글 소리 놀이터 - ㄱ 소리와 받침 익히기</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Nanum+Square+Round:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Nanum Square Round', sans-serif;
+            background: linear-gradient(135deg, #fff3bf 0%, #ffd8a8 30%, #e7f5ff 70%, #d0ebff 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .title-font {
+            font-family: 'Gaegu', cursive;
+        }
+
+        .cute-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 4px solid #ffffff;
+            box-shadow: 0 12px 28px -6px rgba(251, 146, 60, 0.25);
+            border-radius: 2rem;
+        }
+
+        .cute-btn {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .cute-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+        }
+        .cute-btn:active {
+            transform: translateY(2px) scale(0.95);
+        }
+
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-subtle {
+            animation: bounce-subtle 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 0 28px rgba(245, 158, 11, 0.8); }
+        }
+        .glow-active {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Toggle switch styling */
+        .toggle-bg {
+            transition: background-color 0.3s ease;
+        }
+        .toggle-circle {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            height: 10px;
+            width: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #fff4e6;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #f97316;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 pb-12 pt-4 px-3 sm:px-6">
+
+    <div class="max-w-4xl mx-auto space-y-5">
+
+        <!-- HEADER SECTION -->
+        <header class="cute-card p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-4 border-amber-200 bg-amber-50/80">
+            <div class="flex items-center gap-3 text-center sm:text-left">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-amber-400 to-orange-400 rounded-3xl flex items-center justify-center text-white text-3xl sm:text-4xl shadow-lg animate-bounce-subtle flex-shrink-0 border-2 border-white">
+                    🐥
+                </div>
+                <div>
+                    <h1 class="title-font text-3xl sm:text-4xl font-black text-amber-900 tracking-wide">
+                        한글 소리 놀이터
+                    </h1>
+                    <p class="text-xs sm:text-sm text-amber-800 font-bold mt-1">
+                        'ㄱ' 소리와 모음을 합쳐서 글자를 만들고 소리를 들어보아요!
+                    </p>
+                </div>
+            </div>
+
+            <!-- BATCHIM TOGGLE SWITCH (받침 추가 온/오프) -->
+            <div class="flex items-center gap-3 bg-white px-4 py-3 rounded-2xl border-2 border-amber-300 shadow-sm">
+                <div class="text-right">
+                    <div class="text-xs font-black text-amber-900">받침 추가 모드</div>
+                    <div id="batchim-status-text" class="text-[11px] font-bold text-slate-500">받침 없음 (2소리)</div>
+                </div>
+
+                <button onclick="toggleBatchimMode()" id="toggle-batchim-btn" class="toggle-bg relative w-16 h-9 bg-slate-300 rounded-full p-1 cursor-pointer focus:outline-none transition-colors duration-300">
+                    <div id="toggle-circle" class="toggle-circle w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center text-xs font-extrabold text-slate-600">
+                        OFF
+                    </div>
+                </button>
+            </div>
+        </header>
+
+        <!-- MODE NAVIGATION TABS -->
+        <nav class="grid grid-cols-3 gap-2 text-center">
+            <button onclick="switchTab('builder')" id="tab-builder" class="cute-btn py-3 px-2 rounded-2xl font-black text-sm sm:text-base border-3 border-amber-400 bg-amber-400 text-amber-950 shadow-md">
+                🧩 글자 조합하기
+            </button>
+            <button onclick="switchTab('chart')" id="tab-chart" class="cute-btn py-3 px-2 rounded-2xl font-black text-sm sm:text-base border-3 border-slate-200 bg-white text-slate-600 hover:bg-amber-50">
+                📊 소리 차트표
+            </button>
+            <button onclick="switchTab('quiz')" id="tab-quiz" class="cute-btn py-3 px-2 rounded-2xl font-black text-sm sm:text-base border-3 border-slate-200 bg-white text-slate-600 hover:bg-amber-50">
+                🎯 소리 맞추기 퀴즈
+            </button>
+        </nav>
+
+        <!-- MAIN TAB 1: SYLLABLE BUILDER (글자 조합하기) -->
+        <main id="view-builder" class="space-y-5">
+            
+            <!-- Dynamic Result Card -->
+            <section class="cute-card p-6 border-4 border-orange-200 bg-gradient-to-b from-orange-50 via-white to-amber-50 text-center relative overflow-hidden flex flex-col items-center">
+                
+                <div class="text-xs font-extrabold text-orange-700 bg-orange-100 px-3 py-1 rounded-full mb-3 inline-block">
+                    현재 소리 합치기
+                </div>
+
+                <!-- Equation Display ([초성] + [중성] (+ [종성]) = [결합글자]) -->
+                <div class="flex items-center justify-center gap-2 sm:gap-4 my-2 flex-wrap">
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-black text-slate-500 mb-1">첫소리</span>
+                        <div id="disp-cho" class="w-14 h-14 sm:w-16 sm:h-16 bg-amber-100 border-2 border-amber-300 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black text-amber-900 shadow-sm">
+                            ㄱ
+                        </div>
+                    </div>
+
+                    <span class="text-2xl font-black text-orange-400">+</span>
+
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-black text-slate-500 mb-1">가운뎃소리</span>
+                        <div id="disp-jun" class="w-14 h-14 sm:w-16 sm:h-16 bg-sky-100 border-2 border-sky-300 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black text-sky-900 shadow-sm">
+                            ㅏ
+                        </div>
+                    </div>
+
+                    <!-- Batchim Slot (Visible when batchim mode is ON) -->
+                    <div id="slot-jong-container" class="hidden flex items-center gap-2 sm:gap-4">
+                        <span class="text-2xl font-black text-orange-400">+</span>
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs font-black text-rose-500 mb-1">받침</span>
+                            <div id="disp-jong" class="w-14 h-14 sm:w-16 sm:h-16 bg-rose-100 border-2 border-rose-300 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black text-rose-900 shadow-sm">
+                                없음
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="text-2xl font-black text-orange-400">=</span>
+
+                    <!-- Combined Syllable Display -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-black text-emerald-600 mb-1">완성된 글자</span>
+                        <button onclick="speakCurrentSyllable()" id="disp-result-btn" class="cute-btn w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-tr from-amber-400 via-orange-400 to-rose-400 border-4 border-white rounded-3xl flex items-center justify-center text-4xl sm:text-5xl font-black text-white shadow-xl glow-active transform hover:scale-105 active:scale-95">
+                            <span id="disp-result-text">가</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Word Example & Speaker Button -->
+                <div class="mt-4 pt-4 border-t-2 border-orange-100 w-full max-w-md flex items-center justify-between px-2">
+                    <div class="flex items-center gap-3 text-left">
+                        <span id="word-emoji" class="text-4xl animate-bounce-subtle">🎒</span>
+                        <div>
+                            <div class="text-xs font-black text-slate-400">대표 낱말 보기</div>
+                            <div id="word-text" class="text-lg sm:text-xl font-black text-amber-900">가방</div>
+                        </div>
+                    </div>
+
+                    <button onclick="speakCurrentSyllable()" class="cute-btn bg-amber-500 hover:bg-amber-600 text-white font-black px-4 py-2.5 rounded-2xl shadow-md flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-volume-high text-lg"></i>
+                        <span>소리 듣기</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SELECTION PANELS -->
+            <div class="grid grid-cols-1 gap-4">
+                
+                <!-- 1. Consonant Selector (첫소리 - 자음) -->
+                <section class="cute-card p-4 border-3 border-amber-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="title-font text-xl font-black text-amber-900 flex items-center gap-2">
+                            <span>1️⃣</span> 첫소리 자음 선택하기
+                        </h2>
+                        <span class="text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-xl">
+                            'ㄱ' 소리 중심
+                        </span>
+                    </div>
+                    <div id="cho-buttons-grid" class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                        <!-- Rendered via JS -->
+                    </div>
+                </section>
+
+                <!-- 2. Vowel Selector (가운뎃소리 - 모음) -->
+                <section class="cute-card p-4 border-3 border-sky-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="title-font text-xl font-black text-sky-900 flex items-center gap-2">
+                            <span>2️⃣</span> 가운뎃소리 모음 선택하기
+                        </h2>
+                        <span class="text-xs font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-xl">
+                            모음을 눌러 소리를 합쳐요
+                        </span>
+                    </div>
+                    <div id="jun-buttons-grid" class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                        <!-- Rendered via JS -->
+                    </div>
+                </section>
+
+                <!-- 3. Final Consonant Selector (받침 - 종성) [Only visible when batchim mode ON] -->
+                <section id="jong-section" class="cute-card p-4 border-3 border-rose-200 hidden bg-rose-50/40">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="title-font text-xl font-black text-rose-900 flex items-center gap-2">
+                            <span>3️⃣</span> 받침 고르기 (종성)
+                        </h2>
+                        <span class="text-xs font-bold text-rose-700 bg-rose-100 px-2.5 py-1 rounded-xl">
+                            받침을 넣으면 어떤 소리가 날까요?
+                        </span>
+                    </div>
+                    <div id="jong-buttons-grid" class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                        <!-- Rendered via JS -->
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- MAIN TAB 2: SOUND CHART MATRIX (소리 차트표) -->
+        <main id="view-chart" class="cute-card p-5 border-4 border-indigo-200 hidden space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-indigo-100 pb-3">
+                <div>
+                    <h2 class="title-font text-2xl font-black text-indigo-900 flex items-center gap-2">
+                        <span>📊</span> <span id="chart-title-text">'ㄱ' 자음 소리 모음표</span>
+                    </h2>
+                    <p class="text-xs text-indigo-700 font-bold mt-0.5">
+                        버튼을 누르면 각각의 소리를 하나씩 들을 수 있어요.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="chart-batchim-badge" class="text-xs font-extrabold bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-xl">
+                        받침: 없음
+                    </span>
+                </div>
+            </div>
+
+            <!-- Sound Grid Buttons -->
+            <div id="sound-chart-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <!-- Sound buttons rendered via JS -->
+            </div>
+        </main>
+
+        <!-- MAIN TAB 3: SOUND MATCHING QUIZ (소리 맞추기 퀴즈) -->
+        <main id="view-quiz" class="cute-card p-6 border-4 border-emerald-200 hidden text-center space-y-5">
+            <div>
+                <span class="text-xs font-extrabold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full inline-block mb-1">
+                    신나는 귀 쫑긋 퀴즈
+                </span>
+                <h2 class="title-font text-3xl font-black text-emerald-950">
+                    들려오는 소리를 찾아 눌러보세요!
+                </h2>
+            </div>
+
+            <!-- Quiz Target Speaker Area -->
+            <div class="bg-emerald-50 border-3 border-emerald-300 p-6 rounded-3xl flex flex-col items-center justify-center max-w-md mx-auto shadow-inner">
+                <button onclick="playQuizQuestion()" class="cute-btn w-24 h-24 bg-gradient-to-tr from-emerald-400 to-teal-500 text-white rounded-3xl flex items-center justify-center text-4xl shadow-lg border-4 border-white mb-3">
+                    <i class="fa-solid fa-volume-high animate-pulse"></i>
+                </button>
+                <div class="text-sm font-extrabold text-emerald-900">
+                    버튼을 눌러 다시 들어보세요
+                </div>
+            </div>
+
+            <!-- Quiz Answer Options Grid -->
+            <div id="quiz-options-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto">
+                <!-- Answer choice cards injected via JS -->
+            </div>
+
+            <!-- Quiz Score & Feedback -->
+            <div class="flex items-center justify-center gap-6 pt-3 border-t-2 border-emerald-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">⭐</span>
+                    <span class="text-xs font-extrabold text-slate-500">맞춘 개수:</span>
+                    <span id="quiz-score-num" class="title-font text-2xl font-black text-emerald-800">0</span>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        /* ===================================================================
+           1. DATASET DEFINITIONS FOR HANGEUL PHONETICS & EXAMPLES
+           =================================================================== */
+
+        // Cho-sung (Initial Consonants) list & Toddler Friendly Subset
+        const CHO_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+        const CHO_TODDLER = [
+            { char: 'ㄱ', name: '기역', color: 'bg-amber-400 text-amber-950 border-amber-500' },
+            { char: 'ㄴ', name: '니은', color: 'bg-orange-300 text-orange-950 border-orange-400' },
+            { char: 'ㄷ', name: '디귿', color: 'bg-yellow-300 text-yellow-950 border-yellow-400' },
+            { char: 'ㄹ', name: '리을', color: 'bg-lime-300 text-lime-950 border-lime-400' },
+            { char: 'ㅁ', name: '미음', color: 'bg-emerald-300 text-emerald-950 border-emerald-400' },
+            { char: 'ㅂ', name: '비읍', color: 'bg-sky-300 text-sky-950 border-sky-400' },
+            { char: 'ㅅ', name: '시옷', color: 'bg-indigo-300 text-indigo-950 border-indigo-400' },
+            { char: 'ㅇ', name: '이응', color: 'bg-purple-300 text-purple-950 border-purple-400' },
+            { char: 'ㅈ', name: '지읒', color: 'bg-pink-300 text-pink-950 border-pink-400' },
+            { char: 'ㅎ', name: '히읗', color: 'bg-rose-300 text-rose-950 border-rose-400' }
+        ];
+
+        // Jun-sung (Vowels) list
+        const JUN_LIST = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+        const JUN_TODDLER = [
+            { char: 'ㅏ', index: 0 },
+            { char: 'ㅑ', index: 2 },
+            { char: 'ㅓ', index: 4 },
+            { char: 'ㅕ', index: 6 },
+            { char: 'ㅗ', index: 8 },
+            { char: 'ㅛ', index: 12 },
+            { char: 'ㅜ', index: 13 },
+            { char: 'ㅠ', index: 17 },
+            { char: 'ㅡ', index: 18 },
+            { char: 'ㅣ', index: 20 }
+        ];
+
+        // Jong-sung (Final Consonants / 받침) mapping
+        // Index in Hangeul Unicode formula
+        const JONG_MAP = [
+            { name: '없음', char: '', index: 0 },
+            { name: 'ㄱ 받침', char: 'ㄱ', index: 1 },
+            { name: 'ㄴ 받침', char: 'ㄴ', index: 4 },
+            { name: 'ㄹ 받침', char: 'ㄹ', index: 8 },
+            { name: 'ㅁ 받침', char: 'ㅁ', index: 16 },
+            { name: 'ㅂ 받침', char: 'ㅂ', index: 17 },
+            { name: 'ㅇ 받침', char: 'ㅇ', index: 21 }
+        ];
+
+        // Toddler Word & Emoji Dictionary for Visual Guidance
+        const WORD_DICTIONARY = {
+            '가': { word: '가방', emoji: '🎒' },
+            '구': { word: '구두', emoji: '👞' },
+            '고': { word: '고양이', emoji: '🐱' },
+            '기': { word: '기차', emoji: '🚂' },
+            '개': { word: '강아지', emoji: '🐶' },
+            '각': { word: '삼각김밥', emoji: '🍙' },
+            '간': { word: '간식', emoji: '🍩' },
+            '갈': { word: '갈매기', emoji: '🐦' },
+            '감': { word: '감자', emoji: '🥔' },
+            '갑': { word: '장갑', emoji: '🧤' },
+            '강': { word: '강아지', emoji: '🐶' },
+            '공': { word: '축구공', emoji: '⚽' },
+            '국': { word: '따뜻한 국', emoji: '🍜' },
+            '곰': { word: '아기곰', emoji: '🧸' },
+            '나': { word: '나비', emoji: '🦋' },
+            '나무': { word: '나무', emoji: '🌳' },
+            '노': { word: '노랑색', emoji: '🟡' },
+            '눈': { word: '하얀 눈', emoji: '❄️' },
+            '달': { word: '예쁜 달', emoji: '🌙' },
+            '모': { word: '모자', emoji: '🧢' },
+            '물': { word: '시원한 물', emoji: '💧' },
+            '바': { word: '바나나', emoji: '🍌' },
+            '사': { word: '사과', emoji: '🍎' },
+            '소': { word: '얼룩소', emoji: '🐮' },
+            '오': { word: '귀여운 오리', emoji: '🦆' },
+            '자': { word: '자동차', emoji: '🚗' },
+            '하': { word: '하늘', emoji: '☁️' }
+        };
+
+        /* ===================================================================
+           2. APP STATE VARIABLES & WEB AUDIO
+           =================================================================== */
+        let state = {
+            batchimMode: false, // OFF: 2-stage (초성+중성), ON: 3-stage (초성+중성+종성)
+            selectedCho: 'ㄱ',
+            selectedJun: 'ㅏ',
+            selectedJong: JONG_MAP[0], // '없음'
+            activeTab: 'builder',
+            quizCurrentTarget: '',
+            quizScore: 0
+        };
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playPopSound() {
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(850, now + 0.1);
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } catch (e) {}
+        }
+
+        function playFanfareSound() {
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    const now = audioCtx.currentTime + idx * 0.12;
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                });
+            } catch (e) {}
+        }
+
+        /* ===================================================================
+           3. HANGEUL UNICODE COMPOSER ALGORITHM
+           =================================================================== */
+        function composeSyllable(choChar, junChar, jongIndex = 0) {
+            const choIndex = CHO_LIST.indexOf(choChar);
+            const junObj = JUN_TODDLER.find(j => j.char === junChar);
+            const junIndex = junObj ? junObj.index : 0;
+
+            if (choIndex === -1) return choChar;
+
+            // Unicode calculation formula: 0xAC00 + (CHO * 21 * 28) + (JUN * 28) + JONG
+            const unicode = 0xAC00 + (choIndex * 21 * 28) + (junIndex * 28) + jongIndex;
+            return String.fromCharCode(unicode);
+        }
+
+        /* Speech Synthesis (TTS) Helper */
+        function speakText(text, rate = 0.85) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                utterance.rate = rate; // Slightly slower for toddlers
+                utterance.pitch = 1.1; // Cute clear pitch
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        /* ===================================================================
+           4. TOGGLE BATCHIM MODE & NAVIGATION
+           =================================================================== */
+        function toggleBatchimMode() {
+            playPopSound();
+            state.batchimMode = !state.batchimMode;
+
+            const toggleBtn = document.getElementById('toggle-batchim-btn');
+            const toggleCircle = document.getElementById('toggle-circle');
+            const statusText = document.getElementById('batchim-status-text');
+            const jongSlot = document.getElementById('slot-jong-container');
+            const jongSection = document.getElementById('jong-section');
+
+            if (state.batchimMode) {
+                toggleBtn.classList.remove('bg-slate-300');
+                toggleBtn.classList.add('bg-rose-500');
+                toggleCircle.style.transform = 'translateX(28px)';
+                toggleCircle.innerText = 'ON';
+                toggleCircle.className = 'toggle-circle w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center text-xs font-black text-rose-600';
+                statusText.innerText = '받침 사용 (3소리)';
+                statusText.className = 'text-[11px] font-extrabold text-rose-600';
+
+                jongSlot.classList.remove('hidden');
+                jongSection.classList.remove('hidden');
+                speakText("받침 모드를 켰어요! 받침을 골라보세요.");
+            } else {
+                toggleBtn.classList.remove('bg-rose-500');
+                toggleBtn.classList.add('bg-slate-300');
+                toggleCircle.style.transform = 'translateX(0px)';
+                toggleCircle.innerText = 'OFF';
+                toggleCircle.className = 'toggle-circle w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center text-xs font-extrabold text-slate-600';
+                statusText.innerText = '받침 없음 (2소리)';
+                statusText.className = 'text-[11px] font-bold text-slate-500';
+
+                jongSlot.classList.add('hidden');
+                jongSection.classList.add('hidden');
+                state.selectedJong = JONG_MAP[0]; // Reset to none
+                speakText("받침을 껐어요.");
+            }
+
+            updateBuilderView();
+            if (state.activeTab === 'chart') renderSoundChart();
+        }
+
+        function switchTab(tabName) {
+            playPopSound();
+            state.activeTab = tabName;
+
+            ['builder', 'chart', 'quiz'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const view = document.getElementById(`view-${t}`);
+
+                if (t === tabName) {
+                    btn.className = "cute-btn py-3 px-2 rounded-2xl font-black text-sm sm:text-base border-3 border-amber-400 bg-amber-400 text-amber-950 shadow-md";
+                    view.classList.remove('hidden');
+                } else {
+                    btn.className = "cute-btn py-3 px-2 rounded-2xl font-black text-sm sm:text-base border-3 border-slate-200 bg-white text-slate-600 hover:bg-amber-50";
+                    view.classList.add('hidden');
+                }
+            });
+
+            if (tabName === 'chart') renderSoundChart();
+            if (tabName === 'quiz') startNewQuizQuestion();
+        }
+
+        /* ===================================================================
+           5. BUILDER VIEW CONTROLLERS
+           =================================================================== */
+        function initBuilderGrids() {
+            // Render 초성 Buttons
+            const choGrid = document.getElementById('cho-buttons-grid');
+            choGrid.innerHTML = '';
+            CHO_TODDLER.forEach(item => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectCho(item.char);
+                btn.className = `cho-btn cute-btn px-4 py-2.5 rounded-2xl font-black text-lg sm:text-xl border-2 transition-all shadow-sm ${
+                    state.selectedCho === item.char
+                        ? 'bg-amber-500 text-white border-amber-600 ring-4 ring-amber-200 scale-105'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-amber-300'
+                }`;
+                btn.innerText = item.char;
+                choGrid.appendChild(btn);
+            });
+
+            // Render 중성 Buttons
+            const junGrid = document.getElementById('jun-buttons-grid');
+            junGrid.innerHTML = '';
+            JUN_TODDLER.forEach(item => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectJun(item.char);
+                btn.className = `jun-btn cute-btn px-4 py-2.5 rounded-2xl font-black text-lg sm:text-xl border-2 transition-all shadow-sm ${
+                    state.selectedJun === item.char
+                        ? 'bg-sky-500 text-white border-sky-600 ring-4 ring-sky-200 scale-105'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-sky-300'
+                }`;
+                btn.innerText = item.char;
+                junGrid.appendChild(btn);
+            });
+
+            // Render 종성 (받침) Buttons
+            const jongGrid = document.getElementById('jong-buttons-grid');
+            jongGrid.innerHTML = '';
+            JONG_MAP.forEach(item => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectJong(item);
+                btn.className = `jong-btn cute-btn px-3.5 py-2 rounded-2xl font-black text-sm sm:text-base border-2 transition-all shadow-sm ${
+                    state.selectedJong.index === item.index
+                        ? 'bg-rose-500 text-white border-rose-600 ring-4 ring-rose-200 scale-105'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-rose-300'
+                }`;
+                btn.innerText = item.name;
+                jongGrid.appendChild(btn);
+            });
+
+            updateBuilderView();
+        }
+
+        function selectCho(char) {
+            playPopSound();
+            state.selectedCho = char;
+            initBuilderGrids();
+            speakCurrentSyllable();
+        }
+
+        function selectJun(char) {
+            playPopSound();
+            state.selectedJun = char;
+            initBuilderGrids();
+            speakCurrentSyllable();
+        }
+
+        function selectJong(jongObj) {
+            playPopSound();
+            state.selectedJong = jongObj;
+            initBuilderGrids();
+            speakCurrentSyllable();
+        }
+
+        function updateBuilderView() {
+            document.getElementById('disp-cho').innerText = state.selectedCho;
+            document.getElementById('disp-jun').innerText = state.selectedJun;
+            document.getElementById('disp-jong').innerText = state.selectedJong.char || '없음';
+
+            const jongIdx = state.batchimMode ? state.selectedJong.index : 0;
+            const currentSyllable = composeSyllable(state.selectedCho, state.selectedJun, jongIdx);
+
+            document.getElementById('disp-result-text').innerText = currentSyllable;
+
+            // Lookup example word
+            const example = WORD_DICTIONARY[currentSyllable] || { word: `${currentSyllable} 글자`, emoji: '✨' };
+            document.getElementById('word-emoji').innerText = example.emoji;
+            document.getElementById('word-text').innerText = example.word;
+        }
+
+        function speakCurrentSyllable() {
+            const jongIdx = state.batchimMode ? state.selectedJong.index : 0;
+            const currentSyllable = composeSyllable(state.selectedCho, state.selectedJun, jongIdx);
+            speakText(currentSyllable);
+        }
+
+        /* ===================================================================
+           6. SOUND CHART VIEW CONTROLLER
+           =================================================================== */
+        function renderSoundChart() {
+            const chartGrid = document.getElementById('sound-chart-grid');
+            const chartTitle = document.getElementById('chart-title-text');
+            const batchimBadge = document.getElementById('chart-batchim-badge');
+
+            chartTitle.innerText = `'${state.selectedCho}' 자음 소리 차트`;
+            batchimBadge.innerText = state.batchimMode && state.selectedJong.char
+                ? `받침: ${state.selectedJong.char}`
+                : '받침: 없음';
+
+            chartGrid.innerHTML = '';
+
+            const jongIdx = state.batchimMode ? state.selectedJong.index : 0;
+
+            JUN_TODDLER.forEach(jun => {
+                const syllable = composeSyllable(state.selectedCho, jun.char, jongIdx);
+                const example = WORD_DICTIONARY[syllable];
+
+                const card = document.createElement('button');
+                card.onclick = () => {
+                    playPopSound();
+                    speakText(syllable);
+                };
+                card.className = "cute-btn bg-white border-3 border-indigo-200 hover:border-indigo-400 p-4 rounded-3xl flex flex-col items-center justify-center gap-1 shadow-sm";
+
+                card.innerHTML = `
+                    <span class="text-3xl font-black text-indigo-900">${syllable}</span>
+                    <span class="text-[11px] font-extrabold text-slate-400 mt-1">
+                        ${state.selectedCho} + ${jun.char} ${state.batchimMode && state.selectedJong.char ? '+ ' + state.selectedJong.char : ''}
+                    </span>
+                    ${example ? `<span class="text-xs text-indigo-600 font-bold mt-1">${example.emoji} ${example.word}</span>` : ''}
+                `;
+
+                chartGrid.appendChild(card);
+            });
+        }
+
+        /* ===================================================================
+           7. SOUND MATCHING QUIZ LOGIC
+           =================================================================== */
+        function startNewQuizQuestion() {
+            const jongIdx = state.batchimMode ? state.selectedJong.index : 0;
+            
+            // Build candidate syllables using current consonant or random toddler consonants
+            const pool = JUN_TODDLER.map(jun => composeSyllable(state.selectedCho, jun.char, jongIdx));
+            
+            // Shuffle and pick 4 options
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
+            const options = shuffled.slice(0, 4);
+
+            state.quizCurrentTarget = options[Math.floor(Math.random() * options.length)];
+
+            // Render options buttons
+            const grid = document.getElementById('quiz-options-grid');
+            grid.innerHTML = '';
+
+            options.forEach(syllable => {
+                const btn = document.createElement('button');
+                btn.onclick = () => checkQuizAnswer(syllable, btn);
+                btn.className = "cute-btn bg-white border-3 border-emerald-300 hover:border-emerald-500 py-6 rounded-3xl text-3xl font-black text-emerald-950 shadow-md";
+                btn.innerText = syllable;
+                grid.appendChild(btn);
+            });
+
+            setTimeout(() => {
+                playQuizQuestion();
+            }, 300);
+        }
+
+        function playQuizQuestion() {
+            if (state.quizCurrentTarget) {
+                speakText(`${state.quizCurrentTarget} 소리를 찾아보세요!`);
+            }
+        }
+
+        function checkQuizAnswer(selectedSyllable, buttonEl) {
+            if (selectedSyllable === state.quizCurrentTarget) {
+                playFanfareSound();
+                if (window.confetti) {
+                    confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                }
+
+                buttonEl.className = "cute-btn bg-emerald-500 border-3 border-emerald-600 text-white py-6 rounded-3xl text-3xl font-black shadow-lg animate-bounce";
+                speakText("정답이에요! 참 잘했어요!");
+
+                state.quizScore++;
+                document.getElementById('quiz-score-num').innerText = state.quizScore;
+
+                setTimeout(() => {
+                    startNewQuizQuestion();
+                }, 1800);
+            } else {
+                playPopSound();
+                buttonEl.className = "cute-btn bg-rose-100 border-3 border-rose-400 text-rose-700 py-6 rounded-3xl text-3xl font-black shadow-sm opacity-60";
+                speakText("다시 한번 들어보세요!");
+            }
+        }
+
+        /* ===================================================================
+           8. PAGE INITIALIZATION
+           =================================================================== */
+        window.onload = function() {
+            initBuilderGrids();
+        };
+    </script>
+</body>
+</html>
